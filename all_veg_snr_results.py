@@ -194,14 +194,14 @@ def make_training_data_fixed_snr(category_name,snr,training_mode):
     if training_mode == 'binary':
         training_class = []
         for i in category_df['classification']:
-            if i['tree'] > 0:
+            if i['seawater'] > 0:
                 training_class.append(1) #true, vegetation
-            elif i['tree'] == 0:
+            elif i['seawater'] == 0:
                 training_class.append(0) #false, no vegetation
             else:
                 raise ValueError
     elif training_mode == 'multiclass':
-        training_class = [i['tree'] for i in category_df['classification']]
+        training_class = [i['seawater'] for i in category_df['classification']]
 
     training = []
     for i in range(len(df_training_i)):
@@ -211,7 +211,7 @@ def make_training_data_fixed_snr(category_name,snr,training_mode):
     validation_veg_comp = []
 
     for i in range(len(category_df['B'])):
-        veg = category_df.iloc[i]['classification']['tree']
+        veg = category_df.iloc[i]['classification']['seawater']
         validation_veg_comp.append(veg)
 
     training_class = array(training_class)
@@ -415,28 +415,11 @@ if __name__ == '__main__':
         # I. make training data
         print('Making training data')
 
-        #make training data using parallel processing
-        tmp_training_data = Parallel(n_jobs=cores,verbose=10)(delayed(
-            make_training_data_fixed_snr)(
-            category_name, snr, training_mode) 
-            for category_name in special_read_list.keys())
-
-        all_X_val = {}
-
-        #now, we want training data for all 6 biota together
-        all_training       = [] #training data point, BVRI colors
-        all_training_class = [] #classification (e.g. 0, 1 for binary class.)
-        all_validation_veg = [] #percentage of vegetation
-
-        #combine the parallel processing data
-        for training_data in tmp_training_data:
-            training = training_data[0]
-            training_class = training_data[1]
-            validation_veg_comp = training_data[2]
-            
-            all_training += list(training)
-            all_training_class += list(training_class)
-            all_validation_veg += list(validation_veg_comp)
+        #make training data
+        training_data = make_training_data_snr_range('leafy spurge', SNR_min, 
+                                                        SNR_max, training_mode)
+    
+        all_training, all_training_class, all_validation_veg = training_data
             
         #scale the training data
         all_training = scaler.transform(all_training)
@@ -445,42 +428,19 @@ if __name__ == '__main__':
         all_training = array(all_training)
         all_training_class = array(all_training_class)
         all_validation_veg = array(all_validation_veg)
-
-        #put all 6 biota *together* dataset into all_X_val
-        #all_X_val are all the training data!
-        tmp_df = pd.DataFrame(all_training,columns=['B','V','R','I'])
-        tmp_df['validation'] = all_training_class    
-        tmp_df['vegetation'] = all_validation_veg
-        all_X_val['all'] = tmp_df
-
-        #put each biota *separately* into all_X_vall
-        for training_data in tmp_training_data:
-            #print(training_data)
-            training = array(training_data[0])
-            training_class = array(training_data[1])
-
-            #scale the training data!
-            training = scaler.transform(training)
-            validation_veg_comp = array(training_data[2])
-            category_name = training_data[3]
-
-            #validation dataset
-            tmp_df = pd.DataFrame(training,columns=['B','V','R','I'])
-            #true value
-            tmp_df['validation'] = training_class    
-            #vegetation %
-            tmp_df['vegetation'] = validation_veg_comp
-
-            all_X_val[category_name] = tmp_df
+        
+        all_X_val['leafy spurge'] = pd.DataFrame(training,columns=['B','V','R','I'])
+        #true value
+        all_X_val['validation'] = training_class
+        #water %
+        all_X_val['seawater'] = validation_veg_comp
 
         #initiliaze result holders
         #access both result_df and prob_df by result_df[k number][category_name][model name]
         result_df = {} #prediction results for training data
         prob_df   = {} #to hold probabilities (lots of data)
 
-        tmp_df    = {} #template holder for prob_df
-        for category_name in list(special_read_list.keys()) + ['all']:
-            tmp_df[category_name] = pd.DataFrame()
+        tmp_df = {'leafy spurge': pd.DataFrame()} #template holder for prob_df
 
         #for each i, we want a template holder
         for i in range(kfold_K):
@@ -495,10 +455,9 @@ if __name__ == '__main__':
         #things to iterate over parallel processing
         args_for_mp = []
         for i in range(kfold_K):
-            for category_name in list(special_read_list.keys()) + ['all']:
-                training = all_X_val[category_name][['B','V','R','I']]
-                models = pk.load(open(f'{output_dir}/all/models_{i+1}.pk','rb'))
-                args_for_mp.append((models, training, i, category_name))
+            training = all_X_val['leafy spurge'][['B','V','R','I']]
+            models = pk.load(open(f'{output_dir}/all/models_{i+1}.pk','rb'))
+            args_for_mp.append((models, training, i, 'leafy spurge'))
 
         #parallel processing
         all_predictions = Parallel(n_jobs=cores, verbose=10)(delayed(

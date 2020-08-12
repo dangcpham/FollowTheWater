@@ -144,7 +144,7 @@ else:
 np.random.seed(seed) 
 #get the pruning alpha for this particular dataset
 alpha_dict = pk.load(open(alpha_file, 'rb'))
-alpha = alpha_dict['all']
+alpha = alpha_dict['leafy spurge']
 #timing
 time_of_run = datetime.now().strftime('%m/%d/%Y %H:%M:%S')
 initial_time = time.time()
@@ -364,7 +364,7 @@ if __name__ == '__main__':
     training_data = make_training_data_snr_range('leafy spurge', SNR_min, 
                                                      SNR_max, training_mode)
 
-    all_training, all_training_class, all_validation_veg = training_data
+    all_training, all_training_class, all_validation_veg, _ = training_data
         
     #scale the training data
     scaler = preprocessing.StandardScaler().fit(all_training)
