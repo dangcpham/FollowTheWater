@@ -552,9 +552,9 @@ if __name__ == '__main__':
                     # get all incorrect/correct predictions
                     tmp_X_val = all_X_val[veg]
                     correct_df = (tmp_X_val.loc[tmp_X_val[model_name] == 
-                        tmp_X_val['validation']]['vegetation'])
+                        tmp_X_val['validation']]['seawater'])
                     incorrect_df = (tmp_X_val.loc[tmp_X_val[model_name] != 
-                        tmp_X_val['validation']]['vegetation'])
+                        tmp_X_val['validation']]['seawater'])
                     
                     # get the histogram
                     correct, bin_edges = np.histogram(correct_df,bins=binning)
