@@ -247,6 +247,7 @@ if __name__ == '__main__':
     # II. calculate alpha for binary classification
 
     print("Finding best alpha for binary classification")
+    alpha_dict = {}
     alpha_dict['leafy spurge'] = get_alpha('leafy spurge', training,
                                 array(all_X_val['leafy spurge']['validation']))
     print('Best alpha\n',alpha_dict)
@@ -256,6 +257,7 @@ if __name__ == '__main__':
         open('{}/pruning_alpha.pk'.format(binary_output_dir), 'wb'))
 
     #III. calculate alpha for multiclass classification
+    alpha_dict = {}
     print("Finding best alpha for multiclass classification")
     alpha_dict['leafy spurge'] = get_alpha('leafy spurge', training,
                                 array(all_X_val['leafy spurge']['water']))

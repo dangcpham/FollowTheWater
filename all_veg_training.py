@@ -228,14 +228,14 @@ def make_training_data_snr_range(category_name, SNR_min, SNR_max, mode):
     if mode == 'binary':
         training_class = []
         for i in category_df['classification']:
-            if i['water'] > 0:
+            if i['seawater'] > 0:
                 training_class.append(1) #true, vegetation
-            elif i['water'] == 0:
+            elif i['seawater'] == 0:
                 training_class.append(0) #false, no vegetation
             else:
                 raise ValueError
     elif mode == 'multiclass':
-        training_class = [i['water'] for i in category_df['classification']]
+        training_class = [i['seawater'] for i in category_df['classification']]
 
     training = []
     for i in range(len(df_training_i)):
@@ -245,7 +245,7 @@ def make_training_data_snr_range(category_name, SNR_min, SNR_max, mode):
     validation_veg_comp = []
 
     for i in range(len(category_df['B'])):
-        veg = category_df.iloc[i]['classification']['water']
+        veg = category_df.iloc[i]['classification']['seawater']
         validation_veg_comp.append(veg)
 
     training_class = np.array(training_class)
@@ -281,12 +281,12 @@ def train_save(X_train, X_validation, Y_train,Y_validation,
     #make validation dataset
     X_val_df = pd.DataFrame(X_validation,columns=["B","V","R","I"])
     X_val_df['validation'] = Y_validation
-    X_val_df['water'] = veg_validation
+    X_val_df['seawater'] = veg_validation
 
     #make training dataset
     X_train_df = pd.DataFrame(X_train,columns=["B","V","R","I"])
     X_train_df['validation'] = Y_train
-    X_train_df['water'] = veg_train
+    X_train_df['seawater'] = veg_train
 
     #traing the models using parallel processing
     Parallel(n_jobs = cores, verbose = 10)(delayed(__train_save_helper)(
@@ -324,11 +324,11 @@ def save_extra_plot(X_val_df, kfold_count):
     for name, _ in models:
         ax = axes[i]
 
-        ax.hist(X_val_df.loc[X_val_df[name] == X_val_df['validation']]['water'],
+        ax.hist(X_val_df.loc[X_val_df[name] == X_val_df['validation']]['seawater'],
             bins=bins_list, label='Accurate', histtype='bar', 
             stacked=True, fill=False)
 
-        ax.hist(X_val_df.loc[X_val_df[name] != X_val_df['validation']]['water'],
+        ax.hist(X_val_df.loc[X_val_df[name] != X_val_df['validation']]['seawater'],
             bins=bins_list,label='Inaccurate',histtype='step', 
             stacked=True, fill=True,alpha=0.7)
         
