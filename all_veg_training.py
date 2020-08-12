@@ -309,45 +309,6 @@ def train_save(X_train, X_validation, Y_train,Y_validation,
     filepath = output_dir + '/training_data_{}.pk'.format(kfold_count)
     pk.dump(X_train_df, open(filepath,'wb'))
 
-    ### PLOT THE RESULTS ###
-    fig, axes = plt.subplots(nrows=3,ncols=3,
-                        sharex=True,sharey=True,figsize=(10,10))
-    axes = axes.flat
-
-    bins_list = np.arange(0,105,5)
-    xticks_list = np.arange(0,105,10)
-
-    i=0
-    for name, _ in models:
-        ax = axes[i]
-
-        ax.hist(X_val_df.loc[X_val_df[name] == X_val_df['validation']]['seawater'],
-            bins=bins_list, label='Accurate', histtype='bar', 
-            stacked=True, fill=False)
-
-        ax.hist(X_val_df.loc[X_val_df[name] != X_val_df['validation']]['seawater'],
-            bins=bins_list,label='Inaccurate',histtype='step', 
-            stacked=True, fill=True,alpha=0.7)
-        
-        ax.set_xticks(xticks_list)
-        
-        ax.set_title('{}\nBA:{}, A:{}'.format(
-            name,
-            round(balanced_accuracy_score(X_val_df['validation'],
-                X_val_df[name]),2),
-            round(accuracy_score(X_val_df['validation'],
-                X_val_df[name]),2)
-        ),y=0.8)
-        i+=1
-
-    axes[5].legend(loc='center right')
-    axes[-1].set_xlabel('Water %')
-    axes[-2].set_xlabel('Water %')
-    fig.suptitle('Binary classification results',y=0.92)
-    plt.subplots_adjust(wspace=0,hspace=0)
-    fig.savefig(output_dir + '/class_res_hist_{}.pdf'.format(kfold_count))
-    plt.close(fig)
-
 ############################## MAIN CODE RUN ##################################
 
 if __name__ == '__main__':
