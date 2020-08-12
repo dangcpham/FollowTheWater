@@ -54,14 +54,6 @@ switch_backend('Agg')
 all_model_names = ['LR','LDA','KNN','CART','RF','NB','SVM','MVH','MVS']
 #warnings.filterwarnings("ignore", category=FutureWarning)
 DEFAULT_INPUT_ML_DATA_PATH = 'data/ML_data_cloud_rayleigh/ML_'
-special_read_list = {'agrococcus':'spectra/Hegde_2013/Agrococcus/Agrococcus%20sp._KM349956.csv',
-                     'geodermatophilus': 'spectra/Hegde_2013/Geodermatophilus/Geodermatophilus%20sp._KM349882.csv',
-                     'bark': 'spectra/ECOSTRESS_nonphotosyntheticvegetation/bark/nonphotosyntheticvegetation.bark.acer.rubrum.vswir.acru-1-81.ucsb.asd.spectrum.csv',
-                     'lichen': 'spectra/ECOSTRESS_nonphotosyntheticvegetation/lichen/nonphotosyntheticvegetation.lichen.lichen.species.vswir.vh298.ucsb.asd.spectrum.csv',
-                     'aspen': 'spectra/USGS_Vegetation_and_Microorganisms/Aspen_Leaf-A/aspen_leaf_dw92-2.10753.asc',
-                     'leafy spurge': 'spectra/USGS_Vegetation_and_Microorganisms/LeafySpurge/leafyspurge_spurge-a2-jun98.11306.asc'
-                    }
-
 ################################# PARAMETERS ##################################
 
 parser = argparse.ArgumentParser()
@@ -517,7 +509,7 @@ if __name__ == '__main__':
         prob_heatmap = []
         
         j = 0
-        for veg in ['all'] + list(special_read_list.keys()):
+        for veg ['leafy spurge']:
             heatmap.append([])
             prob_heatmap.append([])
             
