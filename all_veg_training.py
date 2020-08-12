@@ -175,7 +175,6 @@ logging.info("Run start at {}\n".format(time_of_run))
 ######################## HELPER FUNCTIONS FOR K-FOLD ##########################
 # make_training_data_snr_range: make training data given snr range
 # train_save: train models and save
-# save_extra_plot: save plots
 
 def make_training_data_snr_range(category_name, SNR_min, SNR_max, mode):
     category_df = pd.read_pickle(DEFAULT_INPUT_ML_DATA_PATH+
@@ -310,7 +309,6 @@ def train_save(X_train, X_validation, Y_train,Y_validation,
     filepath = output_dir + '/training_data_{}.pk'.format(kfold_count)
     pk.dump(X_train_df, open(filepath,'wb'))
 
-def save_extra_plot(X_val_df, kfold_count):
     ### PLOT THE RESULTS ###
     fig, axes = plt.subplots(nrows=3,ncols=3,
                         sharex=True,sharey=True,figsize=(10,10))
@@ -461,7 +459,6 @@ if __name__ == '__main__':
         X_val_df = pk.load(
             open(output_dir + '/validation_data_{}.pk'.format(i), 'rb')
         )
-        save_extra_plot(X_val_df, i)
 
     ## DONE! ###
     logging.info("Total running time: {}".format(time.time() - initial_time))

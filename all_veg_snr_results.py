@@ -419,7 +419,7 @@ if __name__ == '__main__':
         training_data = make_training_data_snr_range('leafy spurge', SNR_min, 
                                                         SNR_max, training_mode)
     
-        all_training, all_training_class, all_validation_veg = training_data
+        all_training, all_training_class, all_validation_veg, _ = training_data
             
         #scale the training data
         all_training = scaler.transform(all_training)
@@ -457,12 +457,12 @@ if __name__ == '__main__':
         for i in range(kfold_K):
             training = all_X_val['leafy spurge'][['B','V','R','I']]
             models = pk.load(open(f'{output_dir}/all/models_{i+1}.pk','rb'))
-            args_for_mp.append((models, training, i, 'leafy spurge'))
+            args_for_mp.append((models, training, i))
 
         #parallel processing
         all_predictions = Parallel(n_jobs=cores, verbose=10)(delayed(
-            predict_model)(models, training,i,category_name) 
-                for models, training,i,category_name in args_for_mp )
+            predict_model)(models, training,i,'leafy spurge') 
+                for models, training,i in args_for_mp )
 
         #consolidate paralleling processing results
         for prediction in all_predictions:
