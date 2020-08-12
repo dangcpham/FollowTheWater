@@ -51,7 +51,7 @@ switch_backend('Agg')
 #rcParams["text.latex.preamble"] = r"\usepackage{cmbright}"
 
 
-all_model_names = ['LR','LDA','KNN','CART','NB','SVM','MVH','MVS']
+all_model_names = ['LR','LDA','KNN','CART','RF','NB','SVM','MVH','MVS']
 #warnings.filterwarnings("ignore", category=FutureWarning)
 DEFAULT_INPUT_ML_DATA_PATH = 'data/ML_data_cloud_rayleigh/ML_'
 special_read_list = {'agrococcus':'spectra/Hegde_2013/Agrococcus/Agrococcus%20sp._KM349956.csv',
