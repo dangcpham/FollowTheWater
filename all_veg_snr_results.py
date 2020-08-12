@@ -408,8 +408,7 @@ if __name__ == '__main__':
         print('Making training data')
 
         #make training data
-        training_data = make_training_data_snr_range('leafy spurge', SNR_min, 
-                                                        SNR_max, training_mode)
+        training_data = make_training_data_fixed_snr('leafy spurge', snr, training_mode)
     
         all_training, all_training_class, all_validation_veg, _ = training_data
             
