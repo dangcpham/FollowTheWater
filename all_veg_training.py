@@ -29,7 +29,7 @@
         2) Train LR, LDA, KNN, CART, NB, SVM, MVH, and MVS models on the
            data. The ML models are trained to perform binary and multiclass
            classification on biota. Which are True/False detection of biota
-           existence or classifying which 5% bin of vegetation the data belongs
+           existence or classifying which 5% bin of water the data belongs
            to.
            
            Furthermore, the trained models can be used to
@@ -149,7 +149,7 @@ alpha = alpha_dict['all']
 time_of_run = datetime.now().strftime('%m/%d/%Y %H:%M:%S')
 initial_time = time.time()
 
-print('Training on all vegetations')
+print('Training on water, biota leafy spurge')
 print('Output directory: {}'.format(output_dir))
 
 ################################## LOGGING ####################################
@@ -163,7 +163,6 @@ logging.basicConfig(level=logging.DEBUG,
                     filemode='w')
 
 logging.info("Running binary classification for noisy data")
-logging.info("All vegetations")
 logging.info("Cores: {}".format(cores))
 logging.info("SNR range: [{},{}]".format(SNR_min,SNR_max))
 logging.info("Seed: {}".format(seed))
@@ -229,9 +228,9 @@ def make_training_data_snr_range(category_name, SNR_min, SNR_max, mode):
         training_class = []
         for i in category_df['classification']:
             if i['seawater'] > 0:
-                training_class.append(1) #true, vegetation
+                training_class.append(1) #true, water
             elif i['seawater'] == 0:
-                training_class.append(0) #false, no vegetation
+                training_class.append(0) #false, no water
             else:
                 raise ValueError
     elif mode == 'multiclass':
@@ -241,7 +240,7 @@ def make_training_data_snr_range(category_name, SNR_min, SNR_max, mode):
     for i in range(len(df_training_i)):
         training.append([df_training_b[i], df_training_v[i],
                          df_training_r[i], df_training_i[i]])
-    #vegetation %
+    #water %
     validation_veg_comp = []
 
     for i in range(len(category_df['B'])):
@@ -344,8 +343,8 @@ def save_extra_plot(X_val_df, kfold_count):
         i+=1
 
     axes[5].legend(loc='center right')
-    axes[-1].set_xlabel('Vegetation %')
-    axes[-2].set_xlabel('Vegetation %')
+    axes[-1].set_xlabel('Water %')
+    axes[-2].set_xlabel('Water %')
     fig.suptitle('Binary classification results',y=0.92)
     plt.subplots_adjust(wspace=0,hspace=0)
     fig.savefig(output_dir + '/class_res_hist_{}.pdf'.format(kfold_count))
