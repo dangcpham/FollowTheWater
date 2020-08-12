@@ -138,9 +138,9 @@ def make_training_data(category_name, SNR_min, SNR_max):
     #make classifier for supervised training
     training_class = []
     for i in df_training_spectra['classification']:
-        if i['water'] > 0:
+        if i['seawater'] > 0:
             training_class.append(1) #true, vegetation
-        elif i['water'] == 0:
+        elif i['seawater'] == 0:
             training_class.append(0) #false, no vegetation
         else:
             raise ValueError
