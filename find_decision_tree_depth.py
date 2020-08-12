@@ -27,8 +27,6 @@ from sklearn.ensemble import VotingClassifier
 
 from scipy import optimize
 
-#methods available to read spectra data files
-import read_files
 #important helper methods
 import main_methods
 #import standard BVRI filters

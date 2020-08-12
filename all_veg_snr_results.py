@@ -25,8 +25,6 @@ from sklearn.neighbors import NearestNeighbors
 #ensemble method
 from sklearn.ensemble import VotingClassifier
 
-#methods available to read spectra data files
-import read_files
 #important helper methods
 import main_methods
 #import standard BVRI filters
