@@ -400,8 +400,8 @@ if __name__ == '__main__':
     models_0.append(('NB', GaussianNB()))
     models_0.append(('SVM', SVC(probability=True,gamma='scale',
         random_state=seed)))
-    models_0.append(('RF', RandomForestClassifier(random_state=seed, 
-        ccp_alpha = alpha)))
+    models_0.append(('RF', RandomForestClassifier(n_estimators=400,
+        random_state=seed, ccp_alpha = alpha)))
     #put all single models together
     single_models=copy(models_0)
 
