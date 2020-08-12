@@ -379,7 +379,7 @@ def make_heatmap(heatmap, heatmap_label, ax, fig,
 
     ax.set_xticks(arange(0,len(all_X_val.keys()),1))
     xticklabels = [veg_name.capitalize() for veg_name in all_X_val.keys()]
-    xticklabels[xticklabels.index('Geodermatophilus')] = 'Geoder-\nmatophilus'
+    #xticklabels[xticklabels.index('Geodermatophilus')] = 'Geoder-\nmatophilus'
 
     # Minor ticks
     ax.set_xticks(np.arange(-.5, len(all_X_val.keys()), 1), minor=True)
