@@ -420,6 +420,7 @@ if __name__ == '__main__':
         all_training_class = array(all_training_class)
         all_validation_veg = array(all_validation_veg)
         
+        all_X_val = {}
         all_X_val['leafy spurge'] = pd.DataFrame(all_training,columns=['B','V','R','I'])
         #true value
         all_X_val['validation'] = all_training_class
