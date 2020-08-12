@@ -509,7 +509,7 @@ if __name__ == '__main__':
         prob_heatmap = []
         
         j = 0
-        for veg ['leafy spurge']:
+        for veg in ['leafy spurge']:
             heatmap.append([])
             prob_heatmap.append([])
             
