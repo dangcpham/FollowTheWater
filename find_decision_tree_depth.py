@@ -62,7 +62,7 @@ all_model_names = ['LR','LDA','KNN','CART','NB','SVM','MVH','MVS']
 ################################# PARAMETERS ##################################
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-mpc', '--cores',  type=int, default=6, required=True,
+parser.add_argument('-mpc', '--cores',  type=int, default=10, required=True,
                     help='How many cores for multiprocessing?' )
 
 parser.add_argument('-ob', '--binaryoutput', type=str,
@@ -140,9 +140,9 @@ def make_training_data(category_name, SNR_min, SNR_max):
     #make classifier for supervised training
     training_class = []
     for i in df_training_spectra['classification']:
-        if i['tree'] > 0:
+        if i['water'] > 0:
             training_class.append(1) #true, vegetation
-        elif i['tree'] == 0:
+        elif i['water'] == 0:
             training_class.append(0) #false, no vegetation
         else:
             raise ValueError
@@ -224,87 +224,33 @@ if __name__ == '__main__':
     
     # I. make training data
     print("Making training data")
-    args_for_mp = [(category_name, SNR_min, SNR_max) 
-                    for category_name in special_read_list.keys()]
-
-    tmp_training_data = Parallel(n_jobs=cores,verbose=100)(delayed(
-        make_training_data)(
-        category_name, SNR_min, SNR_max) 
-        for category_name, SNR_min, SNR_max in args_for_mp)
-    
+    training_data = make_training_data('leafy spurge', SNR_min, SNR_max)
     # consolidate training data
 
     print("Consolidating training data")
-    #if train with only one kind of biota
+
     all_X_val = {}
-    for training_data in tmp_training_data:
-        #print(training_data)
-        training = training_data[0]
-        training_class = training_data[1]
-        
-        #scale the training data!
-        training = preprocessing.scale(training)
-        
-        validation_veg_comp = training_data[2]
-        category_name = training_data[3]
-
-        #validation dataset
-        X_val_df = pd.DataFrame(training,columns=['B','V','R','I'])
-        #true value
-        X_val_df['validation'] = training_class    
-        #vegetation %
-        X_val_df['vegetation'] = validation_veg_comp
-
-        all_X_val[category_name] = X_val_df
-
-    #training data comprises of all 6 types of biota
-    all_training = []
-    all_training_class = []
-    all_validation_veg = []
-
-    for training_data in tmp_training_data:
-        
-        training = training_data[0]
-        training_class = training_data[1]
-        validation_veg_comp = training_data[2]
-        
-        all_training += list(training)
-        all_training_class += list(training_class)
-        all_validation_veg += list(validation_veg_comp)
-
-        
+    training, training_class, validation_veg_comp, category_name = training_data
+    
     #scale the training data!
-    scaler = preprocessing.StandardScaler().fit(all_training)
-    all_training = scaler.transform(all_training)
-
-    #training data with all biota
-    all_biota_X_val = pd.DataFrame(all_training, columns = ['B', 'V', 'R', 'I'])
-    all_biota_X_val['validation'] = all_training_class
-    all_biota_X_val['vegetation'] = all_validation_veg
-
-    all_X_val['all'] = all_biota_X_val
+    scaler = preprocessing.StandardScaler().fit(training)
+    training = scaler.transform(training)
+    
+    #validation dataset
+    X_val_df = pd.DataFrame(training,columns=['B','V','R','I'])
+    #true value
+    X_val_df['validation'] = training_class    
+    #water %
+    X_val_df['water'] = validation_veg_comp
+    all_X_val['leafy spurge'] = X_val_df    
+        
     all_categories = list(special_read_list.keys()) + ['all']
 
     # II. calculate alpha for binary classification
 
     print("Finding best alpha for binary classification")
-
-    args_for_mp = [(category_name, 
-                    array(all_X_val[category_name][['B','V','R','I']]),
-                    array(all_X_val[category_name]['validation']))
-                    for category_name in all_categories]
-    
-    tmp_alpha_list = Parallel(n_jobs = cores, verbose = 10)(delayed(
-        get_alpha)(category_name, training, training_class) for 
-        category_name, training, training_class in args_for_mp
-    )
-
-    alpha_dict = {}
-    i = 0
-    for category_name in all_categories:
-        alpha_dict[category_name] = tmp_alpha_list[i]
-        i+=1 
-
+    alpha_dict['leafy spurge'] = get_alpha('leafy spurge', training,
+                                array(all_X_val['leafy spurge']['validation']))
     print('Best alpha\n',alpha_dict)
 
     #save the data
@@ -313,23 +259,8 @@ if __name__ == '__main__':
 
     #III. calculate alpha for multiclass classification
     print("Finding best alpha for multiclass classification")
-
-    args_for_mp = [(category_name, 
-                    array(all_X_val[category_name][['B','V','R','I']]),
-                    array(all_X_val[category_name]['vegetation'])) 
-                for category_name in all_categories]
-    
-    tmp_alpha_list = Parallel(n_jobs = cores, verbose = 10)(delayed(
-        get_alpha)(category_name, training, training_class) for 
-        category_name, training, training_class in args_for_mp
-    )
-
-    alpha_dict = {}
-    i = 0
-    for category_name in all_categories:
-        alpha_dict[category_name] = tmp_alpha_list[i]
-        i+=1 
-
+    alpha_dict['leafy spurge'] = get_alpha('leafy spurge', training,
+                                array(all_X_val['leafy spurge']['water']))
     print('Best alpha\n',alpha_dict)
 
     #save the data

@@ -70,7 +70,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 #ensemble method
-from sklearn.ensemble import VotingClassifier
+from sklearn.ensemble import VotingClassifier, RandomForestClassifier
 
 #important helper methods
 import main_methods
@@ -87,15 +87,6 @@ import logging
 
 plt.switch_backend('Agg')
 DEFAULT_INPUT_ML_DATA_PATH = 'data/ML_data_cloud_rayleigh/ML_'
-#all biota and their spectra path
-special_read_list = {'agrococcus':'spectra/Hegde_2013/Agrococcus/Agrococcus%20sp._KM349956.csv',
-                     'geodermatophilus': 'spectra/Hegde_2013/Geodermatophilus/Geodermatophilus%20sp._KM349882.csv',
-                     'bark': 'spectra/ECOSTRESS_nonphotosyntheticvegetation/bark/nonphotosyntheticvegetation.bark.acer.rubrum.vswir.acru-1-81.ucsb.asd.spectrum.csv',
-                     'lichen': 'spectra/ECOSTRESS_nonphotosyntheticvegetation/lichen/nonphotosyntheticvegetation.lichen.lichen.species.vswir.vh298.ucsb.asd.spectrum.csv',
-                     'aspen': 'spectra/USGS_Vegetation_and_Microorganisms/Aspen_Leaf-A/aspen_leaf_dw92-2.10753.asc',
-                     'leafy spurge': 'spectra/USGS_Vegetation_and_Microorganisms/LeafySpurge/leafyspurge_spurge-a2-jun98.11306.asc'
-                    }
-
 ################################# PARAMETERS ##################################
 
 #process arguments from the terminal command
@@ -237,14 +228,14 @@ def make_training_data_snr_range(category_name, SNR_min, SNR_max, mode):
     if mode == 'binary':
         training_class = []
         for i in category_df['classification']:
-            if i['tree'] > 0:
+            if i['water'] > 0:
                 training_class.append(1) #true, vegetation
-            elif i['tree'] == 0:
+            elif i['water'] == 0:
                 training_class.append(0) #false, no vegetation
             else:
                 raise ValueError
     elif mode == 'multiclass':
-        training_class = [i['tree'] for i in category_df['classification']]
+        training_class = [i['water'] for i in category_df['classification']]
 
     training = []
     for i in range(len(df_training_i)):
@@ -254,7 +245,7 @@ def make_training_data_snr_range(category_name, SNR_min, SNR_max, mode):
     validation_veg_comp = []
 
     for i in range(len(category_df['B'])):
-        veg = category_df.iloc[i]['classification']['tree']
+        veg = category_df.iloc[i]['classification']['water']
         validation_veg_comp.append(veg)
 
     training_class = np.array(training_class)
@@ -267,7 +258,6 @@ def __train_save_helper(name, model, X_train, Y_train, kfold_count,
                         X_val_df, X_train_df):
     print(kfold_count, name)
     model.fit(X_train, Y_train)
-    #print('(k={}) {} trained'.format(kfold_count, name))
 
     predictions = model.predict(X_validation)
     ba_score = balanced_accuracy_score(Y_validation, predictions)
@@ -291,12 +281,12 @@ def train_save(X_train, X_validation, Y_train,Y_validation,
     #make validation dataset
     X_val_df = pd.DataFrame(X_validation,columns=["B","V","R","I"])
     X_val_df['validation'] = Y_validation
-    X_val_df['vegetation'] = veg_validation
+    X_val_df['water'] = veg_validation
 
     #make training dataset
     X_train_df = pd.DataFrame(X_train,columns=["B","V","R","I"])
     X_train_df['validation'] = Y_train
-    X_train_df['vegetation'] = veg_train
+    X_train_df['water'] = veg_train
 
     #traing the models using parallel processing
     Parallel(n_jobs = cores, verbose = 10)(delayed(__train_save_helper)(
@@ -334,11 +324,11 @@ def save_extra_plot(X_val_df, kfold_count):
     for name, _ in models:
         ax = axes[i]
 
-        ax.hist(X_val_df.loc[X_val_df[name] == X_val_df['validation']]['vegetation'],
+        ax.hist(X_val_df.loc[X_val_df[name] == X_val_df['validation']]['water'],
             bins=bins_list, label='Accurate', histtype='bar', 
             stacked=True, fill=False)
 
-        ax.hist(X_val_df.loc[X_val_df[name] != X_val_df['validation']]['vegetation'],
+        ax.hist(X_val_df.loc[X_val_df[name] != X_val_df['validation']]['water'],
             bins=bins_list,label='Inaccurate',histtype='step', 
             stacked=True, fill=True,alpha=0.7)
         
@@ -371,26 +361,11 @@ if __name__ == '__main__':
 
     logging.info('Making training data')
 
-    #make training data using parallel processing
-    tmp_training_data = Parallel(n_jobs=cores,verbose=10)(delayed(
-        make_training_data_snr_range)(
-        category_name, SNR_min, SNR_max, training_mode) 
-        for category_name in special_read_list.keys())
+    #make training data
+    training_data = make_training_data_snr_range('leafy spurge', SNR_min, 
+                                                     SNR_max, training_mode)
 
-    #training data comprises of all 6 types of biota
-    all_training       = [] #training data point, BVRI colors
-    all_training_class = [] #classification (e.g. 0, 1 for binary class.)
-    all_validation_veg = [] #percentage of vegetation
-
-    #combine the parallel processing data
-    for training_data in tmp_training_data:
-        training = training_data[0]
-        training_class = training_data[1]
-        validation_veg_comp = training_data[2]
-        
-        all_training += list(training)
-        all_training_class += list(training_class)
-        all_validation_veg += list(validation_veg_comp)
+    all_training, all_training_class, all_validation_veg = training_data
         
     #scale the training data
     scaler = preprocessing.StandardScaler().fit(all_training)
@@ -428,10 +403,12 @@ if __name__ == '__main__':
     models_0.append(('NB', GaussianNB()))
     models_0.append(('SVM', SVC(probability=True,gamma='scale',
         random_state=seed)))
+    models_0.append(('RF', RandomForestClassifier(random_state=seed, 
+        ccp_alpha = alpha)))
     #put all single models together
     single_models=copy(models_0)
 
-    #now add on the ensemble methods
+    #now add on the voting classifiers
     models_0.append(('MVH', VotingClassifier(estimators=single_models,
         voting='hard')))
     models_0.append(('MVS', VotingClassifier(estimators=single_models,
