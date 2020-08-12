@@ -423,9 +423,9 @@ if __name__ == '__main__':
         all_X_val = {}
         all_X_val['leafy spurge'] = pd.DataFrame(all_training,columns=['B','V','R','I'])
         #true value
-        all_X_val['validation'] = all_training_class
+        all_X_val['leafy spurge']['validation'] = all_training_class
         #water %
-        all_X_val['seawater'] = all_validation_veg
+        all_X_val['leafy spurge']['seawater'] = all_validation_veg
 
         #initiliaze result holders
         #access both result_df and prob_df by result_df[k number][category_name][model name]
