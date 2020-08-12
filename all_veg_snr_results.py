@@ -420,11 +420,11 @@ if __name__ == '__main__':
         all_training_class = array(all_training_class)
         all_validation_veg = array(all_validation_veg)
         
-        all_X_val['leafy spurge'] = pd.DataFrame(training,columns=['B','V','R','I'])
+        all_X_val['leafy spurge'] = pd.DataFrame(all_training,columns=['B','V','R','I'])
         #true value
-        all_X_val['validation'] = training_class
+        all_X_val['validation'] = all_training_class
         #water %
-        all_X_val['seawater'] = validation_veg_comp
+        all_X_val['seawater'] = all_validation_veg
 
         #initiliaze result holders
         #access both result_df and prob_df by result_df[k number][category_name][model name]
@@ -445,15 +445,15 @@ if __name__ == '__main__':
 
         #things to iterate over parallel processing
         args_for_mp = []
+        training = all_X_val['leafy spurge'][['B','V','R','I']]
         for i in range(kfold_K):
-            training = all_X_val['leafy spurge'][['B','V','R','I']]
             models = pk.load(open(f'{output_dir}/all/models_{i+1}.pk','rb'))
-            args_for_mp.append((models, training, i))
+            args_for_mp.append((models, i))
 
         #parallel processing
         all_predictions = Parallel(n_jobs=cores, verbose=10)(delayed(
             predict_model)(models, training,i,'leafy spurge') 
-                for models, training,i in args_for_mp )
+                for models, i in args_for_mp )
 
         #consolidate paralleling processing results
         for prediction in all_predictions:
