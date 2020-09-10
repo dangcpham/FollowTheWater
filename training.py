@@ -143,7 +143,6 @@ if args.io == 'default':
 else:
     io_dir = args.io
 #set the hyperparameter files
-alpha_file = f'{io_dir}/pruning_alpha.pk'
 hyper_file = f'{io_dir}/hyperparams.pk'
 #set the seed
 np.random.seed(seed) 
@@ -192,7 +191,6 @@ logger.info(f'Running {training_mode} classification on noisy data')
 logger.info(f'Cores: {cores}')
 logger.info(f'S/N range: [{SNR_min},{SNR_max}]')
 logger.info(f'Seed: {seed}')
-logger.info(f'Pruning alpha: {alpha}')
 logger.info(f'Hyperparameters: {hyper_file}')
 logger.info(f'K-Fold: {kfold_K}-fold')
 logger.info(f'K-Fold shuffle: {kfold_shuffle}')
